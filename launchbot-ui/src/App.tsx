@@ -1,10 +1,9 @@
-import LaunchbotWidget from "./components/LaunchbotWidget/LaunchbotWidget";
+import Launchbot from "./Launchbot";
 
 function App() {
   return (
     <div>
-      <h1>Launchbot</h1>
-      <LaunchbotWidget />
+      <Launchbot />
     </div>
   );
 }

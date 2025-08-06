@@ -7,3 +7,4 @@ deprecated
 launchbot-ingest
 launchbot-ingest-1
 .DS_Store
+.vscode/

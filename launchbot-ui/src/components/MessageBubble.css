@@ -1,0 +1,67 @@
+/* src/components/MessageBubble.css */
+.message-bubble {
+  max-width: 70%;
+  font-size: 16px;
+  line-height: 1.7;
+  word-wrap: break-word;
+}
+
+.message-bubble.user {
+  align-self: flex-end;
+  text-align: right;
+  /* font-weight: 500; */
+  background: #eee;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.message-bubble.bot {
+  align-self: flex-start;
+  background: #fff;
+  /* border: 1px solid #eee; */
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.bubble-content {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Sources inside the message bubble */
+.launchbot-sources {
+  /* margin-top: 12px; */
+  padding-top: 10px;
+  /* border-top: 1px solid #e0e0e0; */
+  font-size: 13px;
+  color: #666;
+}
+
+.launchbot-sources span {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+}
+
+.launchbot-sources ul {
+  padding-left: 18px;
+  margin: 0px;
+  list-style: disc;
+}
+
+.launchbot-sources li {
+  margin-bottom: 4px;
+}
+
+.launchbot-sources a {
+  color: #0077cc;
+  text-decoration: none;
+  word-break: break-word;
+}
+
+.launchbot-sources a:hover {
+  text-decoration: underline;
+}
