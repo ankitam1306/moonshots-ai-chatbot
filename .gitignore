@@ -1,0 +1,9 @@
+.env
+__pycache__/
+venv/
+*.pyc
+.idea
+deprecated
+launchbot-ingest
+launchbot-ingest-1
+.DS_Store
