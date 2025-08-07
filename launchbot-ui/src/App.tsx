@@ -2,7 +2,7 @@ import Launchbot from "./Launchbot";
 
 function App() {
   return (
-    <div>
+    <div className="container">
       <Launchbot />
     </div>
   );

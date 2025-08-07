@@ -34,14 +34,14 @@ export function useLaunchbotQuery() {
       }
 
       const reader = res.body.getReader();
-      const decoder = new TextDecoder("utf-8");
+      const decoder = new TextDecoder();
       let result = "";
       let finalSources = [];
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        const chunk = decoder.decode(value);
+        const chunk = decoder.decode(value, { stream: true });
 
         try {
           const parsed = JSON.parse(chunk);

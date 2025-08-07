@@ -4,6 +4,7 @@
   padding: 16px;
   background: white;
   gap: 12px;
+  width: 100%;
 }
 
 .chat-input textarea {

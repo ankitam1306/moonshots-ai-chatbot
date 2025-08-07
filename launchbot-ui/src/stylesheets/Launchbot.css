@@ -10,9 +10,10 @@ body,
   height: 100vh;
   /* font-family: system-ui, sans-serif; */
   /* background: #f9f9f9; */
-  /* align-items: center; */
-  /* justify-content: center; */
-  margin: 0px 100px;
+  width: 70%;
+  align-items: center;
+  justify-content: center;
+  /* margin: 0px 100px; */
 }
 
 .launchbot-header {
@@ -20,6 +21,7 @@ body,
   background: white;
   font-weight: bold;
   font-size: 20px;
+  width: 100%;
   /* border-bottom: 1px solid #ddd; */
 }
 
@@ -30,6 +32,7 @@ body,
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 100%;
 }
 
 .launchbot-message {

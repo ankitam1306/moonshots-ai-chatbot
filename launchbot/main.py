@@ -5,7 +5,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from config import init_vectorstore
 
-from bot import run_retrieval_query_full
+from bot import run_retrieval_query
 from model import Request
 
 load_dotenv()
@@ -31,14 +31,14 @@ async def startup_event():
 
 @app.post("/ask")
 async def ask(request: Request):
-  response = run_retrieval_query_full(request.question)
-  return {
-		  "answer": response["answer"],
-		  "sources": response["sources"]
-	  }
-  # return StreamingResponse(
-  #   run_retrieval_query(request.question),
-  #   media_type="text/plain"
-  # )
+  # response = run_retrieval_query_full(request.question)
+  # return {
+	# 	  "answer": response["answer"],
+	# 	  "sources": response["sources"]
+	#   }
+  return StreamingResponse(
+    run_retrieval_query(request.question),
+    media_type="text/event-stream"
+  )
 
 # uvicorn main:app --reload - to start the app
