@@ -8,21 +8,16 @@ body,
   display: flex;
   flex-direction: column;
   height: 100vh;
-  /* font-family: system-ui, sans-serif; */
-  /* background: #f9f9f9; */
   width: 65%;
   align-items: center;
   justify-content: center;
-  /* margin: 0px 100px; */
 }
 
 .launchbot-header {
-  /* padding: 16px; */
   background: white;
   font-weight: bold;
   font-size: 20px;
   width: 100%;
-  /* border-bottom: 1px solid #ddd; */
 }
 
 .launchbot-thread {
@@ -67,7 +62,6 @@ body,
   display: flex;
   padding: 16px;
   background: white;
-  /* border-top: 1px solid #ddd; */
 }
 
 .launchbot-input-area textarea {

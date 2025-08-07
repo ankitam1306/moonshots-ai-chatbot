@@ -19,7 +19,6 @@ app.add_middleware(
 	allow_headers=["*"],
 )
 
-# Example request body
 class Query(BaseModel):
     question: str
 
@@ -31,11 +30,6 @@ async def startup_event():
 
 @app.post("/ask")
 async def ask(request: Request):
-  # response = run_retrieval_query_full(request.question)
-  # return {
-	# 	  "answer": response["answer"],
-	# 	  "sources": response["sources"]
-	#   }
   return StreamingResponse(
     run_retrieval_query(request.question),
     media_type="text/event-stream"

@@ -51,7 +51,6 @@ export function useLaunchbotQuery() {
             break;
           }
         } catch {
-          // const cleanedChunk = chunk.replace(/^\s*\n+/, "");
           result += chunk;
           setAnswer(result);
           if (onStreamUpdate) {

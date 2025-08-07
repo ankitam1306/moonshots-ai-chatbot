@@ -79,8 +79,6 @@ def run_retrieval_query_full(question: str):
 	for src in unique_sources:
 		print("•", src)
 
-	# unique_sources = list({doc.metadata.get("source", "unknown") for doc in result["source_documents"]})
-
 	return {
 		"answer": result["result"],
 		"sources": unique_sources
