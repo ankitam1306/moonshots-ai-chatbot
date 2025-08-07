@@ -1,6 +1,6 @@
 /* src/components/MessageBubble.css */
 .message-bubble {
-  max-width: 70%;
+  max-width: 80%;
   font-size: 16px;
   line-height: 1.7;
   word-wrap: break-word;
@@ -11,18 +11,18 @@
   text-align: right;
   /* font-weight: 500; */
   background: #eee;
-  padding: 12px;
-  border-radius: 10px;
-  margin-bottom: 10px;
+  padding: 8px 12px;
+  border-radius: 16px;
+  /* margin-bottom: 10px; */
 }
 
 .message-bubble.bot {
   align-self: flex-start;
   background: #fff;
   /* border: 1px solid #eee; */
-  padding: 12px;
+  /* padding: 12px; */
   border-radius: 10px;
-  margin-bottom: 10px;
+  /* margin-bottom: 10px; */
 }
 
 .bubble-content {

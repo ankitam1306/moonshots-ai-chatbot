@@ -1,3 +1,4 @@
+import { FaArrowUp } from "react-icons/fa";
 import "./ChatInput.css";
 
 export default function ChatInput({ value, onChange, onSubmit, disabled }) {
@@ -18,8 +19,13 @@ export default function ChatInput({ value, onChange, onSubmit, disabled }) {
         rows={1}
         disabled={disabled}
       />
-      <button onClick={onSubmit} disabled={disabled}>
-        Send
+      <button
+        className={`chat-input-icon ${value.trim() ? "visible" : "hidden"}`}
+        onClick={onSubmit}
+        disabled={disabled}
+        aria-label="Send"
+      >
+        <FaArrowUp />
       </button>
     </div>
   );
