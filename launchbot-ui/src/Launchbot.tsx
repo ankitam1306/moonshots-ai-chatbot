@@ -3,6 +3,7 @@ import { useLaunchbotQuery } from "./hooks/useLaunchbotQuery";
 import MessageBubble from "./components/MessageBubble";
 import ChatInput from "./components/ChatInput";
 import "./stylesheets/Launchbot.css";
+import TypingLoader from "./components/TypingLoader/TypingLoader";
 
 export default function Launchbot() {
   const { askQuestion, loading, highlightedAnswer, sources } =
@@ -34,7 +35,7 @@ export default function Launchbot() {
   return (
     <div className="launchbot-container">
       <header className="launchbot-header">
-        <h2>🚀 Launchbot</h2>
+        <h1>🚀 Launchbot</h1>
       </header>
 
       <div className="launchbot-thread">
@@ -46,8 +47,10 @@ export default function Launchbot() {
             sources={msg.sources}
           />
         ))}
-        {loading && <MessageBubble type="bot" text="..." />}
-        {streamedAnswer && <MessageBubble type="bot" text={streamedAnswer} />}
+        {loading && <MessageBubble type="bot" text={<TypingLoader />} />}
+        {streamedAnswer && (
+          <MessageBubble type="bot" text={streamedAnswer} className="typing" />
+        )}
       </div>
 
       <ChatInput

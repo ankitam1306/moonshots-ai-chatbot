@@ -1,12 +1,17 @@
 import "./MessageBubble.css";
 
 export default function MessageBubble({ type, text, sources }) {
+  const isHTMLString = typeof text === "string";
   return (
     <div className={`message-bubble ${type}`}>
-      <div
-        className="bubble-content"
-        dangerouslySetInnerHTML={{ __html: text }}
-      />
+      {isHTMLString ? (
+        <div
+          className="bubble-content"
+          dangerouslySetInnerHTML={{ __html: text }}
+        />
+      ) : (
+        <div className="bubble-content">{text}</div>
+      )}
       {type === "bot" && sources?.length > 0 && (
         <div className="launchbot-sources">
           <span>📚 Sources:</span>
