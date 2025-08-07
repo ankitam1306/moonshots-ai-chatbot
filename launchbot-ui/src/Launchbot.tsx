@@ -9,26 +9,27 @@ export default function Launchbot() {
     useLaunchbotQuery();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [streamedAnswer, setStreamedAnswer] = useState("");
 
   const handleSubmit = async () => {
     if (!input.trim()) return;
     setMessages((prev) => [...prev, { type: "user", text: input }]);
     setInput("");
 
-    await askQuestion(input);
+    await askQuestion(input, (partial) => {
+      setStreamedAnswer(partial); // streaming chunks
+    });
   };
 
   useEffect(() => {
     if (!loading && highlightedAnswer) {
+      setStreamedAnswer(""); // Reset streamed answer
       setMessages((prev) => [
         ...prev,
         { type: "bot", text: highlightedAnswer, sources },
       ]);
     }
   }, [loading, highlightedAnswer]);
-
-  console.log("highlightedAnswer", highlightedAnswer);
-  console.log("messages", messages);
 
   return (
     <div className="launchbot-container">
@@ -46,6 +47,7 @@ export default function Launchbot() {
           />
         ))}
         {loading && <MessageBubble type="bot" text="..." />}
+        {streamedAnswer && <MessageBubble type="bot" text={streamedAnswer} />}
       </div>
 
       <ChatInput

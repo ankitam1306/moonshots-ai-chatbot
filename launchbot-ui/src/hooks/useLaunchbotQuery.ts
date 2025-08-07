@@ -14,7 +14,7 @@ export function useLaunchbotQuery() {
     );
   };
 
-  const askQuestion = async (question) => {
+  const askQuestion = async (question, onStreamUpdate) => {
     setLoading(true);
     setAnswer("");
     setSources([]);
@@ -51,15 +51,18 @@ export function useLaunchbotQuery() {
             break;
           }
         } catch {
-          const cleanedChunk = chunk.replace(/^\s*\n+/, "");
-          result += cleanedChunk;
-          setAnswer((prev) => prev + cleanedChunk);
+          // const cleanedChunk = chunk.replace(/^\s*\n+/, "");
+          result += chunk;
+          setAnswer(result);
+          if (onStreamUpdate) {
+            onStreamUpdate(result);
+          }
         }
       }
 
       // Generate final highlighted answer after all chunks are received
-      // const withBold = boldHeadings(result);
-      const withHighlight = highlightContent(result, finalSources);
+      const withBold = boldHeadings(result);
+      const withHighlight = highlightContent(withBold, finalSources);
       setHighlightedAnswer(withHighlight);
     } catch (err) {
       console.error("Streaming error:", err);
