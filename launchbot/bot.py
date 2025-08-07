@@ -2,11 +2,36 @@ from langchain.chains import RetrievalQA
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain.callbacks.base import AsyncCallbackHandler
 from langchain_pinecone import PineconeVectorStore
+from langchain.prompts import PromptTemplate
+
 import asyncio
 import json
 
 from config import PINECONE_INDEX_NAME
 import config
+
+CUSTOM_RAG_PROMPT = PromptTemplate(
+    input_variables=["context", "question"],
+    template="""
+You are a LaunchDarkly documentation assistant. Use the following retrieved documentation context to answer the user’s question.
+
+If the context is insufficient, use best practices and general knowledge of LaunchDarkly, but clearly indicate which parts were inferred.
+
+Format your response using markdown with **bolded section headers**, bullet points, and code snippets when appropriate.
+
+---
+
+Context:
+{context}
+
+---
+
+Question:
+{question}
+
+Answer:
+"""
+)
 
 
 class StreamingHandler(AsyncCallbackHandler):
@@ -40,7 +65,7 @@ def run_retrieval_query_full(question: str):
 	vectorstore = PineconeVectorStore.from_existing_index(index_name=PINECONE_INDEX_NAME, embedding=embedding_model)
 	retriever = vectorstore.as_retriever(search_type="similarity", k=8)
 	llm = ChatOpenAI(model="gpt-4", temperature=0)
-	qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever, return_source_documents=True)
+	qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever, return_source_documents=True, chain_type_kwargs={"prompt": CUSTOM_RAG_PROMPT})
 	result = qa_chain.invoke(question)
 	print(f'Source is: {result["source_documents"]}')
 
@@ -70,7 +95,7 @@ def run_retrieval_query(question: str):
 	stream_handler = StreamingHandler()
 	llm = ChatOpenAI(model = "gpt-4", temperature = 0, streaming=True, callbacks=[stream_handler])
  
-	qa_chain = RetrievalQA.from_chain_type(llm = llm, retriever = config.retriever, return_source_documents=True)
+	qa_chain = RetrievalQA.from_chain_type(llm = llm, retriever = config.retriever, return_source_documents=True, chain_type_kwargs={"prompt": CUSTOM_RAG_PROMPT})
 	
 	async def run_chain():
 		result = await asyncio.to_thread(qa_chain.invoke, question)
