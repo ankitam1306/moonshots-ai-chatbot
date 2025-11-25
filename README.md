@@ -1,8 +1,4 @@
-# 🚀 Moonshots
-
-A collection of innovative projects and experiments.
-
-## Launchbot
+# 🚀 Launchbot - AI chatbot for LaunchDarkly docs
 
 Launchbot is an intelligent chatbot that provides instant answers to LaunchDarkly documentation questions using RAG (Retrieval-Augmented Generation) technology.
 
@@ -212,7 +208,10 @@ python index_documents_in_pinecone.py
    - Chunks are embedded using OpenAI embeddings
    - Embeddings are stored in Pinecone vector database
 
+   ![Alt text](./assets/LLMMain-Index_documents.drawio.png)
+
 2. **Query Phase** (real-time):
+
    - User asks a question in the UI
    - Frontend sends question to backend API
    - Backend retrieves relevant document chunks from Pinecone
@@ -220,6 +219,8 @@ python index_documents_in_pinecone.py
    - GPT-4 generates an answer based on context
    - Answer streams back to the frontend in real-time
    - Sources are displayed with the answer
+
+   ![Alt text](./assets/LLMMain-Query%20Main.drawio.png)
 
 ---
 
@@ -437,18 +438,444 @@ Here are some example questions you can ask Launchbot and the type of responses 
 
 ---
 
+### Example 6: Complex Multi-Source Query
+
+**Question**: _"How can I gradually roll out a feature to users in a specific segment while monitoring conversion rates, and what should I do if the metrics drop?"_
+
+**Answer**:
+
+> **Implementing a Monitored Segment-Based Rollout**
+>
+> This requires combining several LaunchDarkly features: segments, targeting rules, gradual rollouts, and experimentation. Here's a comprehensive approach:
+>
+> **Step 1: Create a User Segment**
+>
+> 1. Go to **Segments** in your LaunchDarkly dashboard
+> 2. Click **Create segment**
+> 3. Define your targeting criteria (e.g., "premium_users" where `plan = "premium"`)
+> 4. Save the segment
+>
+> **Step 2: Configure Feature Flag with Segment Targeting**
+>
+> 1. Create or edit your feature flag
+> 2. In the **Targeting** tab, add a rule:
+>    - **IF** user is in segment "premium_users"
+>    - **THEN** serve variation based on percentage rollout
+> 3. Set up percentage rollout (start with 10%)
+>
+> **Step 3: Set Up Experimentation & Metrics**
+>
+> 1. Navigate to **Experiments** → **Metrics**
+> 2. Create a conversion metric:
+>    ```
+>    Event: "purchase_completed"
+>    Success criteria: higher is better
+>    ```
+> 3. Attach the metric to your feature flag
+> 4. Set up guardrail metrics (error rates, load times)
+>
+> **Step 4: Enable Guarded Rollout**
+>
+> 1. In your flag settings, enable **Guarded rollout**
+> 2. Configure:
+>    - Start: 10% of segment
+>    - Increment: 15% every 4 hours
+>    - Stop conditions: conversion drop > 5% OR error rate > 2%
+>
+> **If Metrics Drop:**
+>
+> **Automatic Response:**
+>
+> - Guarded rollout automatically pauses
+> - Email alerts sent to team
+> - Flag maintains current rollout percentage
+>
+> **Manual Investigation:**
+>
+> 1. Check **Experimentation dashboard** for metric trends
+> 2. Review **Flag insights** for unusual patterns
+> 3. Analyze **Event stream** for specific user issues
+> 4. Use **Live events** to see real-time flag evaluations
+>
+> **Recovery Options:**
+>
+> ```bash
+> # Option 1: Reduce rollout percentage
+> ldcli flags update --flag-key feature-key --rollout 5
+>
+> # Option 2: Target specific stable segment
+> ldcli flags update --flag-key feature-key --segment power-users-only
+>
+> # Option 3: Kill switch - instant rollback
+> ldcli flags update --flag-key feature-key --on false
+> ```
+>
+> **Best Practices:**
+>
+> - Start with smaller, more engaged segments
+> - Set conservative guardrail thresholds initially
+> - Monitor for at least 24 hours before expanding
+> - Document what "success" looks like before starting
+> - Have a rollback plan ready
+>
+> **Sources**:
+>
+> - https://launchdarkly.com/docs/home/targeting/segments
+> - https://launchdarkly.com/docs/home/releases/guarded-rollouts
+> - https://launchdarkly.com/docs/home/experimentation/manage
+> - https://launchdarkly.com/docs/home/analyzing/metrics
+
+---
+
+### Example 7: Integration & Security Query
+
+**Question**: _"What's the best way to use LaunchDarkly in a microservices architecture with different SDKs, and how do I secure the API keys across services?"_
+
+**Answer**:
+
+> **Microservices Architecture with LaunchDarkly**
+>
+> Managing feature flags across microservices requires careful architecture planning and security considerations.
+>
+> **Architecture Options:**
+>
+> **Option 1: Relay Proxy (Recommended for High-Scale)**
+>
+> The Relay Proxy acts as a local cache, reducing latency and API calls:
+>
+> ```yaml
+> Architecture:
+> ┌─────────────┐
+> │ LaunchDarkly│
+> │   Cloud     │
+> └──────┬──────┘
+>        │ (sync)
+>   ┌────▼────────┐
+>   │ Relay Proxy │ ← Single connection to LD
+>   └────┬────────┘
+>        ├──────┬──────┬──────┐
+>        │      │      │      │
+>     [API]  [Auth] [Cart] [Payment]
+>    Service Service Service Service
+> ```
+>
+> **Setup:**
+>
+> ```bash
+> # Deploy Relay Proxy (Docker example)
+> docker run \
+>   -e LD_ENV_production=sdk-your-key \
+>   -e LD_ENV_staging=sdk-staging-key \
+>   -p 8030:8030 \
+>   launchdarkly/ld-relay
+> ```
+>
+> **Option 2: Direct SDK Integration**
+>
+> Each microservice connects directly (suitable for smaller deployments):
+>
+> ```javascript
+> // Node.js Service
+> const LD = require("launchdarkly-node-server-sdk");
+> const client = LD.init(process.env.LD_SDK_KEY);
+> ```
+>
+> ```python
+> # Python Service
+> import ldclient
+> ldclient.set_sdk_key(os.environ['LD_SDK_KEY'])
+> client = ldclient.get()
+> ```
+>
+> **Security Best Practices:**
+>
+> **1. Environment-Based Keys**
+>
+> Use different SDK keys per environment:
+>
+> ```env
+> # Production
+> LD_SDK_KEY=sdk-production-xxxxxx
+>
+> # Staging
+> LD_SDK_KEY=sdk-staging-xxxxxx
+>
+> # Development
+> LD_SDK_KEY=sdk-dev-xxxxxx
+> ```
+>
+> **2. Service Tokens (Not SDK Keys) for CI/CD**
+>
+> ```bash
+> # For automated deployments and scripts
+> export LD_ACCESS_TOKEN=api-xxxxxxxx  # Service token
+> ldcli flags list --project my-project
+> ```
+>
+> **3. Secrets Management Integration**
+>
+> **Kubernetes:**
+>
+> ```yaml
+> apiVersion: v1
+> kind: Secret
+> metadata:
+>   name: launchdarkly-keys
+> type: Opaque
+> data:
+>   sdk-key: <base64-encoded-key>
+> ---
+> # Reference in deployment
+> env:
+>   - name: LD_SDK_KEY
+>     valueFrom:
+>       secretKeyRef:
+>         name: launchdarkly-keys
+>         key: sdk-key
+> ```
+>
+> **AWS Secrets Manager:**
+>
+> ```javascript
+> const AWS = require("aws-sdk");
+> const secretsManager = new AWS.SecretsManager();
+>
+> const secret = await secretsManager
+>   .getSecretValue({ SecretId: "launchdarkly/sdk-key" })
+>   .promise();
+>
+> const client = LD.init(JSON.parse(secret.SecretString).sdkKey);
+> ```
+>
+> **4. Network Segmentation**
+>
+> - Client-side SDKs: Use mobile/client keys (limited permissions)
+> - Server-side services: Use SDK keys (full flag evaluation)
+> - CI/CD pipelines: Use service tokens (API access only)
+> - Never expose server-side keys in frontend code
+>
+> **5. Key Rotation Strategy**
+>
+> ```bash
+> # Create new SDK key
+> ldcli environments create-key --env production
+>
+> # Update services gradually (blue-green or canary)
+> # Monitor for issues
+> # Delete old key once migration complete
+> ldcli environments delete-key --key old-key-id
+> ```
+>
+> **Cross-Service Flag Consistency:**
+>
+> Use consistent user context across services:
+>
+> ```javascript
+> // Shared user context structure
+> const user = {
+>   key: "user-123",
+>   email: "user@example.com",
+>   custom: {
+>     service: "payment-service",
+>     region: "us-east-1",
+>     tier: "premium",
+>   },
+> };
+> ```
+>
+> **Monitoring & Debugging:**
+>
+> - Enable LaunchDarkly's APM integrations (DataDog, New Relic)
+> - Use distributed tracing to track flag evaluations
+> - Set up alerting for SDK initialization failures
+> - Monitor Relay Proxy health endpoints
+>
+> **Sources**:
+>
+> - https://launchdarkly.com/docs/home/relay-proxy
+> - https://launchdarkly.com/docs/sdk/concepts/client-side-server-side
+> - https://launchdarkly.com/docs/home/account-security/api-access-tokens
+> - https://launchdarkly.com/docs/sdk/features/storing-data
+> - https://launchdarkly.com/docs/home/account-security/keys
+
+---
+
+### Example 8: Troubleshooting Complex Scenario
+
+**Question**: _"My feature flag is returning the wrong variation for some users but not others, and I can't figure out why. How do I debug this?"_
+
+**Answer**:
+
+> **Debugging Inconsistent Flag Evaluations**
+>
+> When flags behave unexpectedly for specific users, it's usually due to targeting rules, user context, or flag configuration. Here's a systematic approach:
+>
+> **Step 1: Use the Flag Evaluation Debugger**
+>
+> LaunchDarkly has built-in tools to see exactly why a user received a specific variation:
+>
+> 1. Go to your **Feature Flag** → **Targeting** tab
+> 2. Click **Test targeting rules** (top right)
+> 3. Enter the affected user's key
+> 4. See the evaluation reason:
+>    - Which rule matched?
+>    - Was user in a segment?
+>    - Percentage rollout bucket?
+>
+> **Step 2: Check User Context**
+>
+> The most common issue is incomplete or incorrect user context:
+>
+> ```javascript
+> // ❌ BAD: Inconsistent user context
+> const user1 = { key: "user-123" };
+> const user2 = { key: "user-123", email: "user@example.com" };
+> // These might evaluate differently if rules target email!
+>
+> // ✅ GOOD: Consistent, complete context
+> const user = {
+>   key: "user-123",
+>   email: "user@example.com",
+>   custom: {
+>     plan: "premium",
+>     signupDate: "2024-01-15",
+>   },
+> };
+> ```
+>
+> **Step 3: Verify Evaluation Order**
+>
+> Rules are evaluated top-to-bottom; first match wins:
+>
+> ```
+> Rule 1: If email ends with "@company.com" → Variation A
+> Rule 2: If plan = "premium" → Variation B
+> Rule 3: If segment = "beta-users" → Variation C
+> Default: Variation D
+>
+> User: email="admin@company.com", plan="premium"
+> Result: Variation A (Rule 1 matched first)
+> ```
+>
+> **Step 4: Inspect User Segments**
+>
+> Verify segment membership:
+>
+> ```bash
+> # Check if user is in segment
+> ldcli segments get-user \
+>   --segment-key beta-users \
+>   --user-key user-123 \
+>   --project my-project
+> ```
+>
+> Common segment issues:
+>
+> - Case sensitivity in string matching
+> - Numeric vs string comparisons ("123" ≠ 123)
+> - Date format inconsistencies
+> - Missing custom attributes
+>
+> **Step 5: Check Percentage Rollouts**
+>
+> Users are bucketed by hashing `(userKey + flagKey + salt)`:
+>
+> - Same user gets consistent variation for a flag
+> - Different users distributed ~evenly
+> - Changing flag key or salt re-buckets users
+>
+> ```bash
+> # See which bucket a user falls into
+> # Use the evaluation debugger or:
+> ldclient.track('flag-evaluation-debug', user, {
+>   flagKey: 'my-flag',
+>   variation: variation,
+> });
+> ```
+>
+> **Step 6: Review Flag History**
+>
+> Check if rules changed recently:
+>
+> 1. Go to **Flag** → **History** tab
+> 2. Look for recent changes in:
+>    - Targeting rules
+>    - Segment modifications
+>    - Rollout percentages
+>    - Default variations
+>
+> **Step 7: Use Live Events**
+>
+> Monitor real-time flag evaluations:
+>
+> 1. **Flags** → **Live events**
+> 2. Filter by user key: `user-123`
+> 3. Watch evaluations happen in real-time
+> 4. See exact context sent from SDK
+>
+> **Step 8: SDK-Level Debugging**
+>
+> Enable verbose logging:
+>
+> ```javascript
+> // Node.js
+> const client = LD.init(sdkKey, {
+>   logger: LD.basicLogger({ level: "debug" }),
+> });
+> ```
+>
+> ```python
+> # Python
+> import logging
+> logging.basicConfig(level=logging.DEBUG)
+> ldclient.set_config(Config(sdk_key, enable_log_evaluation_reasons=True))
+> ```
+>
+> **Common Root Causes:**
+>
+> | Issue                         | Cause                             | Solution                            |
+> | ----------------------------- | --------------------------------- | ----------------------------------- |
+> | Variation flips between calls | User key changing/not consistent  | Ensure stable user key              |
+> | Works in test, not production | Different SDK key/environment     | Verify environment configuration    |
+> | Works for some users, not all | Targeting rule matches subset     | Review rule conditions              |
+> | Recently stopped working      | Flag or segment recently modified | Check history and revert if needed  |
+> | Different across services     | Inconsistent user context         | Standardize context across services |
+> | Cached old variation          | SDK not receiving updates         | Check SDK connection and streaming  |
+> | Flag not found                | Wrong project or environment      | Verify SDK initialization           |
+>
+> **Pro Tips:**
+>
+> - Use evaluation reasons in production (minimal overhead)
+> - Set up flag change alerts for critical flags
+> - Document expected behavior for complex targeting
+> - Test targeting rules before deploying
+> - Use feature flag aliases for easier debugging
+>
+> **Sources**:
+>
+> - https://launchdarkly.com/docs/home/flags/debugger
+> - https://launchdarkly.com/docs/home/flags/targeting-users
+> - https://launchdarkly.com/docs/sdk/features/evaluating
+> - https://launchdarkly.com/docs/home/flags/variations
+> - https://launchdarkly.com/docs/sdk/features/evaluation-reasons
+
+---
+
 ### More Questions You Can Try
+
+**Simple queries:**
 
 - "What are feature flag targeting rules?"
 - "How do I set up environments in LaunchDarkly?"
 - "What is the difference between client-side and server-side SDKs?"
-- "How do I use flag variations and fallback values?"
-- "What are segments and how do I create them?"
-- "How to integrate LaunchDarkly with React?"
-- "What is the relay proxy and when should I use it?"
-- "What metrics can I track with LaunchDarkly?"
-- "How does flag evaluation work?"
-- "How to check usage information?"
+
+**Complex multi-source queries:**
+
+- "How do I implement A/B testing with LaunchDarkly while ensuring GDPR compliance and user consent?"
+- "What's the best approach for managing feature flags across multiple teams and preventing conflicts?"
+- "How can I use LaunchDarkly with serverless functions and handle cold starts efficiently?"
+- "What's the strategy for migrating from environment variables to feature flags in a large application?"
+- "How do I integrate LaunchDarkly with my CI/CD pipeline to automate flag lifecycle management?"
 
 ---
 
@@ -464,27 +891,3 @@ Here are some example questions you can ask Launchbot and the type of responses 
 | `PINECONE_ENVIRONMENT` | Pinecone environment region             |
 
 ---
-
-## Future Enhancements
-
-- [ ] Add conversation history/memory
-- [ ] Support multi-turn conversations
-- [ ] Add authentication
-- [ ] Deploy to production
-- [ ] Add more documentation sources
-- [ ] Implement caching for common queries
-- [ ] Add analytics and usage tracking
-- [ ] Voice input support
-- [ ] Export conversation history
-
----
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
----
-
-## License
-
-MIT License
